@@ -1,15 +1,8 @@
-﻿namespace EFCoreRelationshipsPractice.Model
+﻿namespace EFCoreRelationshipsPractice.Models;
+
+public class ProfileEntity
 {
-    public class ProfileEntity
-    {
-        public ProfileEntity()
-        {
-        }
-
-        public int Id { get; set; }
-
-        public int RegisteredCapital { get; set; }
-
-        public string CertId { get; set; }
-    }
+    public int Id { get; set; }
+    public int RegisteredCapital { get; set; }
+    public string CertId { get; set; }
 }

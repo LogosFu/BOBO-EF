@@ -1,23 +1,23 @@
-﻿using EFCoreRelationshipsPractice.Model;
+﻿using EFCoreRelationshipsPractice.Models;
 
 namespace EFCoreRelationshipsPractice.Dtos
 {
     public class ProfileDto
     {
-        private ProfileEntity? profile;
-
         public ProfileDto()
         {
         }
 
-        public ProfileDto(ProfileEntity profileEntity)
+        public ProfileDto(ProfileEntity? companyEntityProfile)
         {
-            RegisteredCapital = profileEntity.RegisteredCapital;
-            CertId = profileEntity.CertId;
+            if (companyEntityProfile != null)
+            {
+                RegisteredCapital = companyEntityProfile.RegisteredCapital;
+                CertId = companyEntityProfile.CertId;
+            }
         }
 
         public int RegisteredCapital { get; set; }
-
         public string CertId { get; set; }
 
         public ProfileEntity ToEntity()
@@ -25,7 +25,7 @@ namespace EFCoreRelationshipsPractice.Dtos
             return new ProfileEntity()
             {
                 RegisteredCapital = this.RegisteredCapital,
-                CertId = this.CertId,
+                CertId = this.CertId
             };
         }
     }
