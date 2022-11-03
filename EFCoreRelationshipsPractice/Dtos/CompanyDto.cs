@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using EFCoreRelationshipsPractice.Model;
+using System.Collections.Generic;
 
 namespace EFCoreRelationshipsPractice.Dtos
 {
@@ -6,6 +7,11 @@ namespace EFCoreRelationshipsPractice.Dtos
     {
         public CompanyDto()
         {
+        }
+
+        public CompanyDto(CompanyEntity companyEntity)
+        {
+            Name = companyEntity.Name;
         }
 
         public string Name { get; set; }
