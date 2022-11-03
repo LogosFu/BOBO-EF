@@ -23,8 +23,12 @@ using(var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<CompanyDbContext>();
     using (var context = scope.ServiceProvider.GetService<CompanyDbContext>())
     {
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
+        //context.Database.EnsureDeleted();
+        //context.Database.EnsureCreated();
+        if (context.Database.IsRelational())
+        {
+            context.Database.Migrate();
+        }
     }
 }
 
