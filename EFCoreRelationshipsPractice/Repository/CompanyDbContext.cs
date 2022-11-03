@@ -1,4 +1,4 @@
-﻿using EFCoreRelationshipsPractice.Model;
+﻿using EFCoreRelationshipsPractice.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace EFCoreRelationshipsPractice.Repository

@@ -1,5 +1,5 @@
 ﻿using EFCoreRelationshipsPractice.Dtos;
-using EFCoreRelationshipsPractice.Model;
+using EFCoreRelationshipsPractice.Models;
 
 namespace EFCoreRelationshipsPractice.Models
 {
