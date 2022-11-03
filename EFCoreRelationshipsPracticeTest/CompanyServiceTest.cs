@@ -54,5 +54,14 @@ namespace EFCoreRelationshipsPracticeTest
             Assert.Equal("AAA", companyEntity.Name);
         }
 
+        [Fact]
+        public async void Should_get_company_successfully_when_get_by_id_given_a_right_id()
+        {
+            var companyDto = GetACompanyDto();
+            var company = await CompanyService.AddCompany(companyDto);
+            var companyDTO = await CompanyService.GetById(company);
+
+            Assert.Equal(companyDTO.Name, companyDto.Name);
+        }
     }
 }
