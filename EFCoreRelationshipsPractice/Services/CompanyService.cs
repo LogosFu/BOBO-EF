@@ -20,7 +20,10 @@ namespace EFCoreRelationshipsPractice.Services
 
         public async Task<List<CompanyDto>> GetAll()
         {
-            var companies = companyDbContext.Companies.Include(company => company.Profile).ToList();
+            var companies = companyDbContext.Companies
+                .Include(company => company.Profile)
+                .Include(company => company.Employees)
+                .ToList();
             return companies.Select(companyEntity => new CompanyDto(companyEntity)).ToList();
         }
 
