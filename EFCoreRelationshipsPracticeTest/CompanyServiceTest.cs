@@ -63,5 +63,13 @@ namespace EFCoreRelationshipsPracticeTest
 
             Assert.Equal(companyDTO.Name, companyDto.Name);
         }
+        [Fact]
+        public async void Should_delete_company_successfully_when_delete_by_id_given_a_right_id()
+        {
+            var companyDto = GetACompanyDto();
+            var companyId = await CompanyService.AddCompany(companyDto);
+            await CompanyService.DeleteCompany(companyId);
+            Assert.Empty(CompanyDbContext.Companies.ToList());
+        }
     }
 }
