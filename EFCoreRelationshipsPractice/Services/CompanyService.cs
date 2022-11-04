@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using EFCoreRelationshipsPractice.Dtos;
-using EFCoreRelationshipsPractice.Model;
+using EFCoreRelationshipsPractice.Models;
 using EFCoreRelationshipsPractice.Repository;
 using Microsoft.EntityFrameworkCore;
 

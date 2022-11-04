@@ -1,31 +1,60 @@
-﻿using EFCoreRelationshipsPractice.Repository;
-using Microsoft.Extensions.DependencyInjection;
+﻿using EFCoreRelationshipsPractice.Dtos;
+using EFCoreRelationshipsPractice.Models;
+using EFCoreRelationshipsPractice.Repository;
+using EFCoreRelationshipsPractice.Services;
+using Microsoft.EntityFrameworkCore;
 
-namespace EFCoreRelationshipsPracticeTest
+namespace EFCoreRelationshipsPracticeTest.ServiceTest
 {
-    public class TestBase : IClassFixture<CustomWebApplicationFactory<Program>>, IDisposable
+    public class TestBase : IDisposable
     {
-        public TestBase(CustomWebApplicationFactory<Program> factory)
+        internal CompanyService CompanyService;
+        internal CompanyDbContext CompanyDbContext;
+        public TestBase()
         {
-            this.Factory = factory;
+            var options = new DbContextOptionsBuilder<CompanyDbContext>()
+                .UseInMemoryDatabase(databaseName: "DB")
+                .Options;
+
+            CompanyDbContext = new CompanyDbContext(options);
+            CompanyService = new CompanyService(CompanyDbContext);
         }
 
-        protected CustomWebApplicationFactory<Program> Factory { get; }
+        internal void InitDataBase()
+        {
+            CompanyDbContext.Companies.AddRange(new List<CompanyEntity>()
+            {
+                new CompanyEntity(){Name = "AAA",Employees = GetInitEmployees(), Profile = new ProfileEntity(){CertId = "AAAA", RegisteredCapital = 1000}},
+                new CompanyEntity(){Name = "BBB",Employees = GetInitEmployees(), Profile = new ProfileEntity(){CertId = "GooglBBBBeCert", RegisteredCapital = 2000}}
+            });
+            CompanyDbContext.SaveChanges();
+        }
+
+        internal CompanyDto GetACompanyDto()
+        {
+            return new CompanyDto()
+            {
+                Name = "AAA",
+                EmployeeDtos = new List<EmployeeDto>() { new EmployeeDto() { Age = 18, Name = "AA" } },
+                ProfileDto = new ProfileDto() { CertId = "BB", RegisteredCapital = 1000 }
+            };
+        }
+
+        internal List<EmployeeEntity> GetInitEmployees()
+        {
+            return new List<EmployeeEntity>()
+            {
+                new EmployeeEntity() { Age = 20, Name = "AAB" },
+                new EmployeeEntity() { Age = 30, Name = "BBA" }
+            };
+        }
 
         public void Dispose()
         {
-            var scope = Factory.Services.CreateScope();
-            var scopedServices = scope.ServiceProvider;
-            var context = scopedServices.GetRequiredService<CompanyDbContext>();
-
-            context.Companies.RemoveRange(context.Companies);
-
-            context.SaveChanges();
-        }
-
-        protected HttpClient GetClient()
-        {
-            return Factory.CreateClient();
+            CompanyDbContext.RemoveRange(CompanyDbContext.Employees);
+            CompanyDbContext.RemoveRange(CompanyDbContext.Companies);
+            CompanyDbContext.RemoveRange(CompanyDbContext.Profiles);
+            CompanyDbContext.SaveChanges();
         }
     }
 }

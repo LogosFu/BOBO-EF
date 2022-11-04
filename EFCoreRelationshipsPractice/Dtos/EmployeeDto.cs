@@ -1,4 +1,4 @@
-﻿using EFCoreRelationshipsPractice.Model;
+﻿using EFCoreRelationshipsPractice.Models;
 
 namespace EFCoreRelationshipsPractice.Dtos
 {
@@ -8,10 +8,13 @@ namespace EFCoreRelationshipsPractice.Dtos
         {
         }
 
-        public EmployeeDto( EmployeeEntity employeeEntity)
+        public EmployeeDto(EmployeeEntity employeeEntity)
         {
-            Name = employeeEntity.Name;
-            Age = employeeEntity.Age;
+            if (employeeEntity != null)
+            {
+                Name = employeeEntity.Name;
+                Age = employeeEntity.Age;
+            }
         }
 
         public string Name { get; set; }
@@ -21,8 +24,8 @@ namespace EFCoreRelationshipsPractice.Dtos
         {
             return new EmployeeEntity()
             {
-                Name = Name,
-                Age = Age
+                Name = this.Name,
+                Age = this.Age,
             };
         }
     }

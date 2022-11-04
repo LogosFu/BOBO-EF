@@ -1,258 +1,83 @@
-namespace EFCoreRelationshipsPracticeTest.ControllerTest
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+
+namespace EFCoreRelationshipsPracticeTest.ServiceTest
 {
-    using System.Net.Mime;
-    using System.Text;
-    using EFCoreRelationshipsPractice.Dtos;
-    using Newtonsoft.Json;
-
-    public class CompanyControllerTest : TestBase
+    [Collection("Sequential")]
+    public class CompanyServiceTest : TestBase
     {
-        public CompanyControllerTest(CustomWebApplicationFactory<Program> factory)
-            : base(factory)
+        [Fact]
+        public async void Should_return_2_company_with_2_employee_when_get_all()
         {
+            //given
+            InitDataBase();
+
+            //when
+            var companies = await CompanyService.GetAll();
+
+            //then
+            Assert.Equal(2, companies.Count);
+            Assert.Equal("AAA", companies[0].Name);
+            Assert.Equal("AAAA", companies[0].ProfileDto?.CertId);
+            Assert.Equal(2, companies[0].EmployeeDtos?.Count);
         }
 
         [Fact]
-        public async Task Should_create_company_success()
+        public async void Should_create_company_successfully_when_give_a_company()
         {
-            // given
-            var client = GetClient();
-            CompanyDto companyDto = new CompanyDto
-            {
-                Name = "IBM",
-            };
+            //given
+            var companyDto = GetACompanyDto();
 
-            // when
-            var httpContent = JsonConvert.SerializeObject(companyDto);
-            StringContent content = new StringContent(httpContent, Encoding.UTF8, MediaTypeNames.Application.Json);
-            await client.PostAsync("/companies", content);
+            //when
+            var companyId = await CompanyService.AddCompany(companyDto);
 
-            // then
-            var allCompaniesResponse = await client.GetAsync("/companies");
-            var body = await allCompaniesResponse.Content.ReadAsStringAsync();
+            //then
+            var companyEntity = CompanyDbContext.Companies
+                .Include(_ => _.Employees)
+                .Include(_ => _.Profile)
+                .FirstOrDefault(_ => _.Id == companyId);
 
-            var returnCompanies = JsonConvert.DeserializeObject<List<CompanyDto>>(body);
-
-            Assert.Single(returnCompanies);
+            Assert.Equal("AAA", companyEntity?.Name);
+            Assert.Equal("BB", companyEntity?.Profile?.CertId);
+            Assert.Equal("AA", companyEntity?.Employees?[0].Name);
         }
 
         [Fact]
-        public async Task Should_create_company_with_profile_success()
+        public async void Should_get_company_successfully_when_get_by_id_given_a_right_id()
         {
-            // given
-            var client = GetClient();
-            CompanyDto companyDto = new CompanyDto
-            {
-                Name = "IBM",
-                ProfileDto = new ProfileDto()
-                {
-                    RegisteredCapital = 100010,
-                    CertId = "100",
-                },
-            };
+            //given
+            var companyDto = GetACompanyDto();
 
-            // when
-            var httpContent = JsonConvert.SerializeObject(companyDto);
-            StringContent content = new StringContent(httpContent, Encoding.UTF8, MediaTypeNames.Application.Json);
-            await client.PostAsync("/companies", content);
+            //when
+            await CompanyService.AddCompany(companyDto);
 
-            // then
-            var allCompaniesResponse = await client.GetAsync("/companies");
-            var body = await allCompaniesResponse.Content.ReadAsStringAsync();
+            //then
+            var companyEntities = CompanyDbContext.Companies
+                .Include(_ => _.Employees)
+                .Include(_ => _.Profile)
+                .ToList();
 
-            var returnCompanies = JsonConvert.DeserializeObject<List<CompanyDto>>(body);
-
-            Assert.Single(returnCompanies);
-            Assert.Equal(companyDto.ProfileDto.CertId, returnCompanies[0].ProfileDto.CertId);
-            Assert.Equal(companyDto.ProfileDto.RegisteredCapital, returnCompanies[0].ProfileDto.RegisteredCapital);
+            Assert.Single(companyEntities);
+            Assert.Equal("AAA", companyEntities[0].Name);
         }
 
-        [Fact(Skip = "fix it later")]
-        public async Task Should_create_company_with_profile_and_employees_success()
+        [Fact]
+        public async void Should_delete_company_successfully_when_delete_by_id_given_a_right_id()
         {
-            // given
-            var client = GetClient();
-            CompanyDto companyDto = new CompanyDto
-            {
-                Name = "IBM",
-                Employees = new List<EmployeeDto>()
-                {
-                    new EmployeeDto()
-                    {
-                        Name = "Tom",
-                        Age = 19,
-                    },
-                },
-                ProfileDto = new ProfileDto()
-                {
-                    RegisteredCapital = 100010,
-                    CertId = "100",
-                },
-            };
+            //given
+            var companyDto = GetACompanyDto();
+            var companyId = await CompanyService.AddCompany(companyDto);
+            Assert.Single(CompanyDbContext.Companies.ToList());
 
-            // when
-            var httpContent = JsonConvert.SerializeObject(companyDto);
-            StringContent content = new StringContent(httpContent, Encoding.UTF8, MediaTypeNames.Application.Json);
-            await client.PostAsync("/companies", content);
+            //when
+            await CompanyService.DeleteCompany(companyId);
 
-            // then
-            var allCompaniesResponse = await client.GetAsync("/companies");
-            var body = await allCompaniesResponse.Content.ReadAsStringAsync();
-
-            var returnCompanies = JsonConvert.DeserializeObject<List<CompanyDto>>(body);
-
-            Assert.Single(returnCompanies);
-            Assert.Equal(companyDto.ProfileDto.CertId, returnCompanies[0].ProfileDto.CertId);
-            Assert.Equal(companyDto.ProfileDto.RegisteredCapital, returnCompanies[0].ProfileDto.RegisteredCapital);
-            Assert.Equal(companyDto.Employees.Count, returnCompanies[0].Employees.Count);
-            Assert.Equal(companyDto.Employees[0].Age, returnCompanies[0].Employees[0].Age);
-            Assert.Equal(companyDto.Employees[0].Name, returnCompanies[0].Employees[0].Name);
+            //then
+            Assert.Empty(CompanyDbContext.Companies.ToList());
+            Assert.Empty(CompanyDbContext.Companies.ToList());
+            Assert.Empty(CompanyDbContext.Companies.ToList());
         }
 
-        [Fact(Skip = "fix it later")]
-        public async Task Should_delete_company_and_related_employee_and_profile_success()
-        {
-            var client = GetClient();
-            CompanyDto companyDto = new CompanyDto
-            {
-                Name = "IBM",
-                Employees = new List<EmployeeDto>()
-                {
-                    new EmployeeDto()
-                    {
-                        Name = "Tom",
-                        Age = 19,
-                    },
-                },
-                ProfileDto = new ProfileDto()
-                {
-                    RegisteredCapital = 100010,
-                    CertId = "100"
-                },
-            };
 
-            var httpContent = JsonConvert.SerializeObject(companyDto);
-            StringContent content = new StringContent(httpContent, Encoding.UTF8, MediaTypeNames.Application.Json);
-
-            var response = await client.PostAsync("/companies", content);
-            await client.DeleteAsync(response.Headers.Location);
-            var allCompaniesResponse = await client.GetAsync("/companies");
-            var body = await allCompaniesResponse.Content.ReadAsStringAsync();
-
-            var returnCompanies = JsonConvert.DeserializeObject<List<CompanyDto>>(body);
-
-            Assert.Empty(returnCompanies);
-        }
-
-        [Fact(Skip = "fix it later")]
-        public async Task Should_create_many_companies_success()
-        {
-            var client = GetClient();
-            CompanyDto companyDto = new CompanyDto
-            {
-                Name = "IBM",
-                Employees = new List<EmployeeDto>()
-                {
-                    new EmployeeDto()
-                    {
-                        Name = "Tom",
-                        Age = 19,
-                    },
-                },
-                ProfileDto = new ProfileDto()
-                {
-                    RegisteredCapital = 100010,
-                    CertId = "100",
-                },
-            };
-
-            CompanyDto companyDto2 = new CompanyDto
-            {
-                Name = "MS",
-                Employees = new List<EmployeeDto>()
-                {
-                    new EmployeeDto()
-                    {
-                        Name = "Jerry",
-                        Age = 18,
-                    },
-                },
-                ProfileDto = new ProfileDto()
-                {
-                    RegisteredCapital = 100020,
-                    CertId = "101",
-                },
-            };
-
-            var httpContent = JsonConvert.SerializeObject(companyDto);
-            StringContent content = new StringContent(httpContent, Encoding.UTF8, MediaTypeNames.Application.Json);
-            await client.PostAsync("/companies", content);
-            var httpContent2 = JsonConvert.SerializeObject(companyDto2);
-            StringContent content2 = new StringContent(httpContent2, Encoding.UTF8, MediaTypeNames.Application.Json);
-            await client.PostAsync("/companies", content2);
-
-            var allCompaniesResponse = await client.GetAsync("/companies");
-            var body = await allCompaniesResponse.Content.ReadAsStringAsync();
-
-            var returnCompanies = JsonConvert.DeserializeObject<List<CompanyDto>>(body);
-
-            Assert.Equal(2, returnCompanies.Count);
-        }
-
-        [Fact(Skip = "fix it later")]
-        public async Task Should_get_company_by_id_success()
-        {
-            var client = GetClient();
-            CompanyDto companyDto = new CompanyDto
-            {
-                Name = "IBM",
-                Employees = new List<EmployeeDto>()
-                {
-                    new EmployeeDto()
-                    {
-                        Name = "Tom",
-                        Age = 19,
-                    },
-                },
-                ProfileDto = new ProfileDto()
-                {
-                    RegisteredCapital = 100010,
-                    CertId = "100",
-                },
-            };
-
-            CompanyDto companyDto2 = new CompanyDto
-            {
-                Name = "MS",
-                Employees = new List<EmployeeDto>()
-                {
-                    new EmployeeDto()
-                    {
-                        Name = "Jerry",
-                        Age = 18,
-                    },
-                },
-                ProfileDto = new ProfileDto()
-                {
-                    RegisteredCapital = 100020,
-                    CertId = "101",
-                },
-            };
-
-            var httpContent = JsonConvert.SerializeObject(companyDto);
-            StringContent content = new StringContent(httpContent, Encoding.UTF8, MediaTypeNames.Application.Json);
-            var companyResponse =await client.PostAsync("/companies", content);
-
-            var httpContent2 = JsonConvert.SerializeObject(companyDto2);
-            StringContent content2 = new StringContent(httpContent2, Encoding.UTF8, MediaTypeNames.Application.Json);
-            await client.PostAsync("/companies", content2);
-
-            var allCompaniesResponse = await client.GetAsync(companyResponse.Headers.Location);
-            var body = await allCompaniesResponse.Content.ReadAsStringAsync();
-
-            var returnCompany = JsonConvert.DeserializeObject<CompanyDto>(body);
-
-            Assert.Equal("IBM", returnCompany.Name);
-        }
     }
 }

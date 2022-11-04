@@ -1,5 +1,4 @@
-﻿using EFCoreRelationshipsPractice.Model;
-using System.Collections.Generic;
+﻿using EFCoreRelationshipsPractice.Models;
 
 namespace EFCoreRelationshipsPractice.Dtos
 {
@@ -11,24 +10,24 @@ namespace EFCoreRelationshipsPractice.Dtos
 
         public CompanyDto(CompanyEntity companyEntity)
         {
-            Name = companyEntity.Name;
-            ProfileDto = companyEntity.Profile != null ? new ProfileDto(companyEntity.Profile) : null;
-            EmployeesDto = companyEntity.Employees?.Select(employee => new EmployeeDto(employee)).ToList();
+            this.Name = companyEntity.Name;
+            this.ProfileDto = new ProfileDto(companyEntity.Profile);
+            this.EmployeeDtos = companyEntity.Employees.Select(_ => new EmployeeDto(_)).ToList();
         }
 
         public string Name { get; set; }
 
         public ProfileDto? ProfileDto { get; set; }
 
-        public List<EmployeeDto>? EmployeesDto { get; set; }
+        public List<EmployeeDto>? EmployeeDtos { get; set; }
 
         public CompanyEntity ToEntity()
         {
             return new CompanyEntity()
             {
-                Name = Name,
-                Profile = this.ProfileDto?.ToEntity(),
-                Employees = this.EmployeesDto?.Select(employee => employee.ToEntity()).ToList(),
+                Name = this.Name,
+                Profile = ProfileDto?.ToEntity(),
+                Employees = EmployeeDtos?.Select(_ => _.ToEntity()).ToList()
             };
         }
     }
